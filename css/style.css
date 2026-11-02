@@ -1,0 +1,799 @@
+/* =========================================================
+   Live Threat & Traffic Visualizer
+   File : css/style.css  → TAMPILAN halaman (CSS3)
+
+   Daftar isi:
+   1.  CSS Variables (warna, font, jarak)
+   2.  Reset & dasar
+   3.  Header / Navbar          (Flexbox)
+   4.  Layout dashboard         (CSS Grid)
+   5.  Panel & Control Panel    (Flexbox, checkbox kustom)
+   6.  Threat Map + radar
+   7.  Statistik & grafik       (CSS Grid, Flexbox)
+   8.  Tabel log
+   9.  Animasi (@keyframes)
+   10. Responsive (@media)
+   ========================================================= */
+
+
+/* ===================== 1. CSS VARIABLES =====================
+   Semua warna disimpan di satu tempat. Jika ingin mengganti
+   tema, cukup ubah nilai di sini. Dipakai dengan var(--nama). */
+:root {
+  /* Palet monokrom: dari paling gelap ke paling terang */
+  --c-bg:            #050505;
+  --c-surface:       #0c0c0c;
+  --c-surface-2:     #161616;
+  --c-border:        #262626;
+  --c-border-strong: #4d4d4d;
+  --c-text-muted:    #6b6b6b;
+  --c-text-dim:      #a3a3a3;
+  --c-text:          #ededed;
+  --c-white:         #ffffff;
+
+  /* Tipografi */
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
+  --fs-xs: 0.7rem;
+  --fs-sm: 0.8rem;
+  --fs-md: 0.9rem;
+
+  /* Jarak & bentuk */
+  --gap: 16px;
+  --radius: 3px;
+  --transition: 0.2s ease;
+}
+
+
+/* ===================== 2. RESET & DASAR ===================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;   /* padding & border dihitung di dalam lebar elemen */
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;  /* klik menu navbar → gulir halus */
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--c-bg);
+  /* Pola kotak-kotak tipis di latar belakang (2 gradien bertumpuk) */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--c-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Menyembunyikan teks secara visual tapi tetap terbaca pembaca layar */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Lapisan garis scan menutupi seluruh layar.
+   pointer-events: none → tidak menghalangi klik */
+.scanline {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(255, 255, 255, 0.018) 2px,
+    rgba(255, 255, 255, 0.018) 3px
+  );
+}
+
+/* Garis terang yang bergerak dari atas ke bawah */
+.scanline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.04), transparent);
+  animation: scanline 7s linear infinite;
+}
+
+
+/* ===================== 3. HEADER / NAVBAR (Flexbox) ===================== */
+.site-header {
+  position: sticky;          /* header tetap menempel di atas saat digulir */
+  top: 0;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: 12px 24px;
+  background: rgba(5, 5, 5, 0.92);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Logo: lingkaran dengan titik di tengah, dibuat murni dengan CSS */
+.brand__logo {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--c-white);
+  border-radius: 50%;
+}
+
+.brand__logo::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  background: var(--c-white);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.brand__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brand__title span {
+  color: var(--c-text-muted);
+}
+
+.brand__subtitle {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  letter-spacing: 0.08em;
+}
+
+.site-nav ul {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+}
+
+.site-nav a {
+  display: block;
+  padding: 6px 12px;
+  font-size: var(--fs-sm);
+  color: var(--c-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  color: var(--c-white);
+  border-color: var(--c-border-strong);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.1em;
+}
+
+/* Titik putih berdenyut = sistem sedang LIVE */
+.status__dot {
+  width: 10px;
+  height: 10px;
+  background: var(--c-white);
+  border-radius: 50%;
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+
+.status__clock {
+  padding: 2px 8px;
+  color: var(--c-text-dim);
+  border: 1px solid var(--c-border);
+}
+
+/* Saat di-pause, JS menambah class "is-paused" pada <body> */
+.is-paused .status__dot {
+  background: var(--c-text-muted);
+  animation: none;
+}
+
+.is-paused .status__text {
+  color: var(--c-text-muted);
+  animation: blink 1s steps(1) infinite;
+}
+
+
+/* ===================== 4. LAYOUT DASHBOARD (CSS Grid) =====================
+   grid-template-areas = "menggambar" tata letak dengan nama area.
+   Desktop:  [ controls controls ]
+             [   map     stats   ]
+             [   log      log    ]                                          */
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-areas:
+    "controls controls"
+    "map      stats"
+    "log      log";
+  gap: var(--gap);
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--gap);
+}
+
+.panel--controls { grid-area: controls; }
+.panel--map      { grid-area: map; }
+.panel--stats    { grid-area: stats; }
+.panel--log      { grid-area: log; }
+
+
+/* ===================== 5. PANEL & CONTROL PANEL ===================== */
+.panel {
+  position: relative;
+  padding: var(--gap);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+/* Aksen sudut kiri atas panel (pseudo-element) */
+.panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 14px;
+  height: 14px;
+  border-top: 2px solid var(--c-white);
+  border-left: 2px solid var(--c-white);
+}
+
+.panel__title {
+  margin-bottom: 12px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.panel__title::before {
+  content: "// ";
+  color: var(--c-text-muted);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+}
+
+/* Tombol: garis putih, saat hover warnanya terbalik (putih → hitam) */
+.btn {
+  min-width: 120px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-bg);
+  background: var(--c-white);
+  border: 1px solid var(--c-white);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+}
+
+.btn:hover {
+  background: transparent;
+  color: var(--c-white);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--c-text-dim);
+  border-color: var(--c-border-strong);
+}
+
+.btn--ghost:hover {
+  color: var(--c-white);
+  border-color: var(--c-white);
+}
+
+.btn:focus-visible,
+.filter__item input:focus-visible,
+.speed input:focus-visible {
+  outline: 2px dashed var(--c-white);
+  outline-offset: 3px;
+}
+
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  border: none;
+}
+
+.filter__legend {
+  float: left;               /* agar legend sejajar dengan checkbox */
+  margin-right: 4px;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.filter__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Checkbox kustom: appearance:none menghapus gaya bawaan browser */
+.filter__item input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--c-border-strong);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.filter__item input:checked {
+  background: var(--c-white);
+  border-color: var(--c-white);
+  box-shadow: inset 0 0 0 2px var(--c-bg);  /* efek kotak di dalam kotak */
+}
+
+.speed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.speed input {
+  width: 140px;
+  accent-color: var(--c-white);  /* warna slider bawaan jadi putih */
+  cursor: pointer;
+}
+
+.speed output {
+  min-width: 2ch;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--c-white);
+}
+
+
+/* ===================== 6. THREAT MAP + RADAR ===================== */
+.map-wrap {
+  position: relative;        /* acuan posisi untuk .radar (absolute) */
+  aspect-ratio: 2 / 1;       /* tinggi otomatis = setengah lebar */
+  overflow: hidden;
+  background: #070707;
+  border: 1px solid var(--c-border);
+}
+
+.map-wrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Radar: lingkaran besar berisi gradien kerucut yang diputar terus */
+.radar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%); /* geser ke tengah peta */
+  pointer-events: none;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.10),
+    rgba(255, 255, 255, 0) 50deg,
+    transparent 360deg
+  );
+  animation: radar-sweep 6s linear infinite;
+}
+
+.is-paused .radar {
+  animation-play-state: paused;  /* radar berhenti saat di-pause */
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 12px;
+  list-style: none;
+  font-size: var(--fs-xs);
+  color: var(--c-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Contoh garis di legenda, gayanya sama dengan garis di canvas */
+.legend__line {
+  width: 28px;
+}
+
+.legend__line--critical { border-top: 3px solid #ffffff; }
+.legend__line--high     { border-top: 2px solid #c8c8c8; }
+.legend__line--medium   { border-top: 2px dashed #8c8c8c; }
+.legend__line--low      { border-top: 2px dotted #5a5a5a; }
+
+
+/* ===================== 7. STATISTIK & GRAFIK ===================== */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);  /* 2 kolom sama besar */
+  gap: 10px;
+}
+
+.stat-card {
+  padding: 12px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  transition: transform var(--transition), border-color var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--c-border-strong);
+}
+
+.stat-card__label {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.stat-card__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;  /* lebar angka seragam, tidak "goyang" */
+  color: var(--c-white);
+}
+
+.stat-card__note {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+/* Kartu "Kritis" dibuat terbalik (latar putih) agar menonjol */
+.stat-card--alert {
+  background: var(--c-white);
+  border-color: var(--c-white);
+}
+
+.stat-card--alert .stat-card__label,
+.stat-card--alert .stat-card__value {
+  color: var(--c-bg);
+}
+
+.chart {
+  margin-top: var(--gap);
+}
+
+.chart canvas {
+  display: block;
+  width: 100%;
+  height: 140px;
+  background: #070707;
+  border: 1px solid var(--c-border);
+}
+
+.chart__caption {
+  margin-top: 6px;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+.subtitle {
+  margin: var(--gap) 0 8px;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Diagram batang horizontal: [label] [=====batang=====] [angka] */
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.bars__item {
+  display: grid;
+  grid-template-columns: 9.5em 1fr 3em;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-xs);
+}
+
+.bars__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--c-text-dim);
+}
+
+.bars__track {
+  height: 8px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+}
+
+.bars__fill {
+  height: 100%;
+  background: var(--c-white);
+}
+
+.bars__count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bars__empty {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+
+/* ===================== 8. TABEL LOG ===================== */
+.table-wrap {
+  max-height: 380px;
+  overflow: auto;            /* tabel bisa digulir di dalam kotaknya */
+  border: 1px solid var(--c-border);
+}
+
+.log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.log-table th {
+  position: sticky;          /* judul kolom tetap terlihat saat tabel digulir */
+  top: 0;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--c-surface-2);
+  border-bottom: 1px solid var(--c-border-strong);
+}
+
+.log-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--c-border);
+  color: var(--c-text-dim);
+}
+
+/* Baris genap sedikit lebih terang (zebra) */
+.log-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.log-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.log-table tbody tr:hover td {
+  color: var(--c-white);
+}
+
+/* Baris terbaru berkedip sekali */
+.row--new {
+  animation: row-flash 1s ease-out;
+}
+
+.log-table .empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--c-text-muted);
+}
+
+/* Label severity: makin berbahaya makin terang/tebal */
+.badge {
+  display: inline-block;
+  min-width: 72px;
+  padding: 1px 8px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.08em;
+  border: 1px solid;
+  border-radius: var(--radius);
+}
+
+.badge--critical { color: var(--c-bg); background: var(--c-white); border-color: var(--c-white); }
+.badge--high     { color: var(--c-white); border-color: var(--c-white); }
+.badge--medium   { color: var(--c-text-dim); border-color: var(--c-border-strong); border-style: dashed; }
+.badge--low      { color: var(--c-text-muted); border-color: var(--c-border); border-style: dotted; }
+
+.status-blocked { color: var(--c-text-muted); }
+.status-allowed { color: var(--c-white); font-weight: 700; }
+
+
+/* ===================== FOOTER ===================== */
+.site-footer {
+  padding: 20px var(--gap);
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+  border-top: 1px solid var(--c-border);
+}
+
+.site-footer__note {
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+
+/* ===================== 9. ANIMASI (@keyframes) =====================
+   @keyframes mendefinisikan langkah-langkah animasi.
+   Dipakai lewat properti "animation" pada elemen.                    */
+
+/* Membesar-mengecil (logo) */
+@keyframes pulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%      { transform: scale(0.6); opacity: 0.5; }
+}
+
+/* Cincin yang memancar keluar dari titik LIVE */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+  100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+}
+
+/* Radar berputar 360 derajat */
+@keyframes radar-sweep {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Garis scan turun dari atas ke bawah layar */
+@keyframes scanline {
+  from { top: -120px; }
+  to   { top: 100%; }
+}
+
+/* Baris baru: latar putih lalu memudar */
+@keyframes row-flash {
+  from { background: rgba(255, 255, 255, 0.25); }
+  to   { background: transparent; }
+}
+
+/* Teks berkedip (status PAUSED) */
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+
+/* ===================== 10. RESPONSIVE (@media) ===================== */
+
+/* --- Tablet (lebar ≤ 1024px): semua panel jadi 1 kolom --- */
+@media (max-width: 1024px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "controls"
+      "map"
+      "stats"
+      "log";
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(4, 1fr);  /* 4 kartu sejajar */
+  }
+}
+
+/* --- HP (lebar ≤ 600px) --- */
+@media (max-width: 600px) {
+  .site-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px var(--gap);
+  }
+
+  .brand__title {
+    font-size: 0.85rem;
+  }
+
+  .dashboard {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .map-wrap {
+    aspect-ratio: 4 / 3;     /* peta lebih tinggi di layar sempit */
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-card__value {
+    font-size: 1.3rem;
+  }
+
+  /* Sembunyikan kolom yang kurang penting agar tabel muat */
+  .col-optional {
+    display: none;
+  }
+}
+
+/* Pengguna yang mengaktifkan "kurangi gerakan" di sistem operasi */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

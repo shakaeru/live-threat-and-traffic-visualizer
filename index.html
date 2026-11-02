@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<!--
+  =========================================================
+  Live Threat & Traffic Visualizer
+  File   : index.html  → STRUKTUR halaman (HTML5)
+  Tampilan ada di css/style.css, logika ada di js/app.js
+  =========================================================
+-->
+<html lang="id">
+
+<head>
+  <!-- Encoding karakter agar huruf seperti "ã" tampil benar -->
+  <meta charset="UTF-8">
+  <!-- Wajib untuk Responsive Web Design: lebar halaman = lebar layar perangkat -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Dashboard simulasi visualisasi ancaman siber dan lalu lintas jaringan secara real-time.">
+  <title>Live Threat &amp; Traffic Visualizer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- Lapisan efek garis scan ala monitor lama (murni dekorasi, disembunyikan dari pembaca layar) -->
+  <div class="scanline" aria-hidden="true"></div>
+
+  <!-- ===================== 1. HEADER / NAVBAR ===================== -->
+  <header class="site-header">
+    <div class="brand">
+      <span class="brand__logo" aria-hidden="true"></span>
+      <div>
+        <h1 class="brand__title">Live Threat <span>&amp;</span> Traffic Visualizer</h1>
+        <p class="brand__subtitle">Simulasi Pemantauan Keamanan Jaringan</p>
+      </div>
+    </div>
+
+    <!-- <nav> = elemen semantik untuk kumpulan link navigasi -->
+    <nav class="site-nav" aria-label="Navigasi utama">
+      <ul>
+        <li><a href="#map">Peta</a></li>
+        <li><a href="#stats">Statistik</a></li>
+        <li><a href="#log">Log</a></li>
+      </ul>
+    </nav>
+
+    <!-- Indikator status & jam. <time> = elemen HTML5 untuk waktu -->
+    <div class="status">
+      <span class="status__dot" aria-hidden="true"></span>
+      <span class="status__text" id="statusText">LIVE</span>
+      <time class="status__clock" id="clock" datetime="">--:--:--</time>
+    </div>
+  </header>
+
+  <!-- ===================== KONTEN UTAMA ===================== -->
+  <main class="dashboard">
+
+    <!-- ========== 2. FILTER / CONTROL PANEL ========== -->
+    <section class="panel panel--controls" id="controls" aria-labelledby="controls-title">
+      <h2 class="panel__title" id="controls-title">Control Panel</h2>
+
+      <div class="controls">
+        <!-- aria-pressed memberi tahu pembaca layar bahwa ini tombol on/off -->
+        <button class="btn" id="btnToggle" type="button" aria-pressed="false">❚❚ Pause</button>
+        <button class="btn btn--ghost" id="btnClear" type="button">Clear Log</button>
+
+        <!-- <fieldset> + <legend> = pengelompokan input yang berhubungan -->
+        <fieldset class="filter">
+          <legend class="filter__legend">Filter Severity</legend>
+          <label class="filter__item"><input type="checkbox" class="sev-filter" value="critical" checked>
+            Critical</label>
+          <label class="filter__item"><input type="checkbox" class="sev-filter" value="high" checked> High</label>
+          <label class="filter__item"><input type="checkbox" class="sev-filter" value="medium" checked> Medium</label>
+          <label class="filter__item"><input type="checkbox" class="sev-filter" value="low" checked> Low</label>
+        </fieldset>
+
+        <!-- Slider HTML5 (type="range") + <output> untuk menampilkan nilainya -->
+        <label class="speed" for="speed">
+          Kecepatan
+          <input type="range" id="speed" min="1" max="10" value="5">
+          <output id="speedValue" for="speed">5</output>
+        </label>
+      </div>
+    </section>
+
+    <!-- ========== 3. THREAT MAP (CANVAS VISUALIZER) ========== -->
+    <section class="panel panel--map" id="map" aria-labelledby="map-title">
+      <h2 class="panel__title" id="map-title">Indonesia Threat Map</h2>
+
+      <div class="map-wrap">
+        <!-- <canvas> = area gambar HTML5. Isinya digambar oleh JavaScript (Canvas API 2D) -->
+        <canvas id="threatMap" aria-label="Peta animasi serangan siber antar kota" role="img"></canvas>
+        <!-- Efek radar berputar, dibuat dengan CSS @keyframes -->
+        <div class="radar" aria-hidden="true"></div>
+      </div>
+
+      <!-- Legenda gaya garis tiap severity -->
+      <ul class="legend">
+        <li><span class="legend__line legend__line--critical"></span>Critical</li>
+        <li><span class="legend__line legend__line--high"></span>High</li>
+        <li><span class="legend__line legend__line--medium"></span>Medium</li>
+        <li><span class="legend__line legend__line--low"></span>Low</li>
+      </ul>
+    </section>
+
+    <!-- ========== 4. TRAFFIC STATISTICS PANEL ========== -->
+    <section class="panel panel--stats" id="stats" aria-labelledby="stats-title">
+      <h2 class="panel__title" id="stats-title">Traffic Statistics</h2>
+
+      <!-- Setiap kartu adalah <article>: konten mandiri yang bisa berdiri sendiri -->
+      <div class="stat-grid">
+        <article class="stat-card">
+          <h3 class="stat-card__label">Total Serangan</h3>
+          <p class="stat-card__value" id="statTotal">0</p>
+        </article>
+        <article class="stat-card">
+          <h3 class="stat-card__label">Diblokir</h3>
+          <p class="stat-card__value" id="statBlocked">0</p>
+          <p class="stat-card__note" id="statBlockRate">0% dari total</p>
+        </article>
+        <article class="stat-card">
+          <h3 class="stat-card__label">Paket / Detik</h3>
+          <p class="stat-card__value" id="statPps">0</p>
+        </article>
+        <article class="stat-card stat-card--alert">
+          <h3 class="stat-card__label">Kritis</h3>
+          <p class="stat-card__value" id="statCritical">0</p>
+        </article>
+      </div>
+
+      <!-- <figure> + <figcaption> = gambar/grafik beserta keterangannya -->
+      <figure class="chart">
+        <canvas id="trafficChart" aria-label="Grafik paket per detik" role="img"></canvas>
+        <figcaption class="chart__caption">Lalu lintas paket/detik · 60 detik terakhir</figcaption>
+      </figure>
+
+      <h3 class="subtitle">Top 5 Jenis Serangan</h3>
+      <ul class="bars" id="topTypes"></ul>
+    </section>
+
+    <!-- ========== 5. REAL-TIME ATTACK LOG TABLE ========== -->
+    <section class="panel panel--log" id="log" aria-labelledby="log-title">
+      <h2 class="panel__title" id="log-title">Real-time Attack Log</h2>
+
+      <div class="table-wrap">
+        <table class="log-table">
+          <caption class="visually-hidden">50 serangan terbaru, yang terbaru di paling atas</caption>
+          <thead>
+            <tr>
+              <th scope="col">Waktu</th>
+              <th scope="col">IP Sumber</th>
+              <th scope="col">Target</th>
+              <th scope="col">Jenis Serangan</th>
+              <th scope="col" class="col-optional">Port</th>
+              <th scope="col">Severity</th>
+              <th scope="col" class="col-optional">Status</th>
+            </tr>
+          </thead>
+          <!-- Baris-baris <tr> diisi otomatis oleh JavaScript (fungsi renderLog) -->
+          <!-- aria-live="polite" = pembaca layar mengumumkan perubahan isi tabel -->
+          <tbody id="logBody" aria-live="polite"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== 6. FOOTER ===================== -->
+  <footer class="site-footer">
+    <p>&copy; 2026 · Proyek UTS/UAS Pemrograman Web · SHAFWAN KHAIRULLAH (2 TRK B)</p>
+    <p class="site-footer__note">Seluruh data adalah simulasi (mock data) yang dibuat oleh JavaScript.</p>
+  </footer>
+
+  <!-- Script diletakkan di akhir <body> agar semua elemen HTML sudah ada saat JS berjalan -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+# ===== File sampah sistem operasi =====
+.DS_Store
+Thumbs.db
+desktop.ini
+*:Zone.Identifier
+
+# ===== Pengaturan editor / IDE =====
+.vscode/
+.idea/
+*.swp
+*~
+
+# ===== Log & file sementara =====
+*.log
+*.tmp
+tmp/
+temp/
+
+# ===== Pengaturan lokal Claude Code =====
+.claude/
+# CLAUDE.md
