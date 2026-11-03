@@ -107,7 +107,8 @@ Penjelasan setiap bagian kode ada di `docs/PENJELASAN-KODE.md`.
 4. **BAB 3 Implementasi Kode** — screenshot K1–K28 (Gambar 3.1–3.28). Judul & keterangan
    siap pakai ada di **Bagian 5** dokumen ini.
 5. **BAB 4 Hasil Tampilan** — screenshot T1–T12 (Gambar 4.1–4.12). Judul & keterangan
-   siap pakai ada di **Bagian 5** dokumen ini.
+   siap pakai ada di **Bagian 5.2**, sedangkan penjelasan rinci untuk isi pembahasan
+   T2–T8 ada di **Bagian 5.3** dokumen ini.
 6. **BAB 5 Penutup** — kesimpulan, kendala yang dihadapi, rencana pengembangan untuk UAS.
 7. **Lampiran** — link repository GitHub (jika diminta).
 
@@ -409,3 +410,288 @@ Setiap gambar di bawah berisi:
 #### Gambar 4.12 — Pemuatan file modular di tab Network (T12, opsional)
 - **Penerapan:** CSS `@import`, ES6 Modules, server lokal `python3 -m http.server`
 - **Keterangan:** Tab Network memperlihatkan seluruh file CSS dan modul JavaScript dimuat satu per satu dengan status 200 (berhasil). Hal ini membuktikan bahwa arsitektur modular berjalan langsung di browser tanpa bundler.
+
+---
+
+### 5.3 Penjelasan Rinci Hasil Tampilan T2–T8
+
+Bagian 5.2 berisi keterangan singkat di bawah gambar. Bagian ini berisi **pembahasan lengkap**
+untuk teks BAB 4: apa saja yang terlihat, apa yang terjadi di balik layar, cara mengambil
+screenshot yang baik, dan paragraf penjelasan siap pakai.
+
+> Tips: beri **nomor/panah anotasi** pada screenshot (Word: *Insert → Shapes*) sesuai nomor
+> di daftar "Yang terlihat di layar", lalu jelaskan nomor tersebut di paragraf laporan.
+
+---
+
+#### Gambar 4.2 — Header dan navigasi (T2)
+
+**Yang terlihat di layar**
+1. **Logo** — lingkaran bergaris putih dengan titik tengah yang membesar-mengecil.
+2. **Judul & subjudul** — "LIVE THREAT & TRAFFIC VISUALIZER" dan "Simulasi Pemantauan Keamanan Jaringan".
+3. **Menu navigasi** — PETA, STATISTIK, LOG.
+4. **Indikator status** — titik putih berpendar dan teks **LIVE**.
+5. **Jam digital** — format 24 jam `HH:MM:SS`.
+
+**Yang terjadi di balik layar**
+
+| Bagian | Cara kerja | Lokasi kode |
+|---|---|---|
+| Struktur | `<header>`, `<nav>`, `<ul>`, `<a href="#...">`, `<time>` | `index.html` 17–39 |
+| Tata letak | Flexbox `justify-content: space-between` memisahkan logo, menu, dan status ke kiri–tengah–kanan; `flex-wrap` memindahkan elemen ke baris baru bila sempit | `header.css` 1–20 |
+| Header menempel | `position: sticky; top: 0` membuat header tetap di atas saat halaman digulir | `header.css` 1–14 |
+| Logo berdenyut | `::after` membentuk titik tengah, dianimasikan `@keyframes pulse` (skala 1 → 0,6 → 1) | `header.css` 29–36, 111–114 |
+| Titik LIVE | `@keyframes pulse-ring` memancarkan cincin `box-shadow` yang memudar | `header.css` 86–92, 116–119 |
+| Menu | Klik menu melompat ke `id` panel (`#map`, `#stats`, `#log`); gerakannya halus karena `scroll-behavior: smooth`; hover memunculkan garis tepi | `index.html` 25–31, `base.css` 36–38, `header.css` 61–76 |
+| Jam | `updateClock()` dipanggil `setInterval` setiap 1000 ms, mengisi `textContent` dan atribut `dateTime` elemen `<time>` | `main.js` 43–47, 93 |
+
+**Cara mengambil screenshot**
+- Potong hanya area header (Win + Shift + S).
+- Arahkan kursor ke salah satu menu agar efek hover (garis tepi) ikut terlihat.
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.2 menunjukkan bagian header aplikasi yang disusun dengan elemen semantik HTML5 `<header>` dan `<nav>`. Header memuat logo, judul aplikasi, menu navigasi, indikator status, dan jam digital. Ketiga kelompok elemen tersebut diatur dengan Flexbox sehingga logo berada di kiri, menu di tengah, dan status di kanan, serta otomatis turun ke baris baru pada layar sempit. Properti `position: sticky` membuat header tetap terlihat ketika pengguna menggulir halaman.
+>
+> Menu navigasi berupa link jangkar yang mengarah ke `id` setiap panel, dengan efek gulir halus dari `scroll-behavior: smooth`. Titik indikator LIVE dan logo dianimasikan menggunakan `@keyframes` CSS3 untuk memberi kesan sistem sedang aktif memantau. Jam digital menggunakan elemen HTML5 `<time>` yang isinya diperbarui setiap detik oleh fungsi `updateClock()` melalui `setInterval`.
+
+*Gambar kode terkait: 3.2, 3.9, 3.21.*
+
+---
+
+#### Gambar 4.3 — Peta ancaman siber Indonesia (T3)
+
+**Yang terlihat di layar**
+1. **Grid titik** — titik-titik samar di seluruh latar peta.
+2. **Garis koordinat** — garis bujur & lintang setiap 5°, serta garis khatulistiwa putus-putus berlabel **EQUATOR 0°**.
+3. **16 titik kota** dengan nama kota (MEDAN, JAKARTA, …, JAYAPURA).
+4. **Garis serangan melengkung** — bergerak dari kota asal ke kota target, dengan "kepala" bercahaya.
+5. **Efek gelombang** — lingkaran yang membesar dan memudar di kota target.
+6. **Sapuan radar** — bayangan terang yang berputar di atas peta.
+7. **Legenda** — contoh gaya garis Critical, High, Medium, Low.
+
+**Yang terjadi di balik layar**
+
+| Bagian | Cara kerja | Lokasi kode |
+|---|---|---|
+| Posisi kota | `latLngToCanvas()` mengubah lintang/bujur asli menjadi piksel (proyeksi equirectangular) | `geo-converter.js` 5–20 |
+| Latar statis | Grid, garis koordinat, dan kota digambar **sekali** ke canvas tersembunyi, lalu disalin tiap frame dengan `drawImage()` | `radar-map.js` 56–73, 226–230 |
+| Grid & koordinat | Perulangan bersarang `fillRect` + garis `moveTo`/`lineTo`; khatulistiwa memakai `setLineDash` | `radar-map.js` 75–121 |
+| Label kota | Posisi kanan/kiri/atas/bawah dari `LABEL_PLACEMENT` agar tidak bertumpuk | `radar-map.js` 33–38, 123–144 |
+| Garis serangan | Kurva Bézier kuadratik (`pointOnArc`), digambar sampai nilai `progress` | `radar-map.js` 146–190 |
+| Gerakan | `requestAnimationFrame` ±60×/detik; `progress` naik `delta / 1600` → tiba dalam 1,6 detik, lalu memudar 0,7 detik | `radar-map.js` 206–247 |
+| Gelombang | Radius 4 → 26 px dan transparansi naik selama 0,9 detik | `radar-map.js` 192–204 |
+| Gaya severity | `SEVERITY_STYLE`: Critical putih tebal, High abu terang, Medium putus-putus, Low titik-titik | `radar-map.js` 26–31 |
+| Radar | `conic-gradient` diputar `@keyframes radar-sweep` (CSS3, bukan JavaScript) | `radar-canvas.css` 15–35, 64–67 |
+
+**Cara mengambil screenshot**
+- Kecepatan 5 hanya menghasilkan ±3 garis sekaligus. Geser slider ke **7–8** agar lebih ramai.
+- Tunggu sampai ada beberapa garis dengan gaya berbeda dan satu efek gelombang, lalu tekan **Pause** agar momen itu "membeku", baru screenshot.
+- Sertakan legenda di bawah peta.
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.3 menampilkan peta ancaman siber yang digambar pada elemen HTML5 `<canvas>` menggunakan Canvas API 2D. Latar peta terdiri atas grid titik, garis koordinat setiap 5°, dan garis khatulistiwa. Enam belas kota strategis Indonesia dari Sumatra hingga Papua diposisikan berdasarkan koordinat lintang dan bujur aslinya melalui fungsi `latLngToCanvas()` dengan proyeksi equirectangular. Nama kota yang berdekatan, seperti Jakarta dan Bandung, diletakkan pada sisi berbeda agar tidak bertumpuk.
+>
+> Setiap serangan divisualisasikan sebagai garis lengkung berbentuk kurva Bézier kuadratik yang bergerak dari kota asal menuju kota target dalam 1,6 detik, kemudian diakhiri efek gelombang di kota target. Animasi dijalankan oleh `requestAnimationFrame` sekitar 60 kali per detik. Karena tema bersifat monokrom, tingkat bahaya dibedakan melalui kecerahan, ketebalan, dan pola garis sesuai legenda. Efek sapuan radar di atas peta dibuat terpisah dengan `conic-gradient` dan animasi `@keyframes` CSS3.
+
+*Gambar kode terkait: 3.4, 3.12, 3.18, 3.19, 3.22, 3.23, 3.24.*
+
+---
+
+#### Gambar 4.4 — Panel statistik traffic (T4)
+
+**Yang terlihat di layar**
+1. **Total Serangan** — jumlah semua serangan sejak halaman dibuka.
+2. **Diblokir** — jumlah serangan yang diblokir dan persentasenya ("…% dari total").
+3. **Paket / Detik** — nilai lalu lintas terbaru.
+4. **Kritis** — jumlah serangan Critical (kartu berlatar putih).
+5. **Grafik garis** — paket/detik selama 60 detik terakhir, nilai terbaru di ujung kanan.
+6. **Top 5 Jenis Serangan** — diagram batang horizontal beserta jumlahnya.
+
+**Yang terjadi di balik layar**
+
+| Bagian | Cara kerja | Lokasi kode |
+|---|---|---|
+| Kartu angka | Setiap serangan menambah `totals`, lalu `renderStats()` menulis ulang angka dengan `textContent`; angka diberi pemisah ribuan (`toLocaleString('id-ID')` → 1.250) | `threat-logger.js` 134–141, 202–216 |
+| Persentase diblokir | `Math.round(diblokir / total × 100)`; peluang diblokir diatur `BLOCK_RATE = 0.72` sehingga nilainya berkisar ±72% | `threat-logger.js` 6, 135 |
+| Paket/detik | Setiap 1 detik: `800 + kecepatan × 60 + acak(−150…150) + serangan detik itu × 90` | `traffic-chart.js` 28–35, 105–116 |
+| Grafik | Array `history` maksimal 60 data; data lama dibuang `shift()` sehingga grafik bergeser ke kiri; digambar manual dengan Canvas + gradien | `traffic-chart.js` 42–116 |
+| Top 5 | Jumlah per jenis disimpan di `Map`, diurutkan `sort()`, diambil 5 teratas; panjang batang = jumlah ÷ jumlah tertinggi × 100% | `threat-logger.js` 143–182 |
+| Tata letak | CSS Grid 2 kolom untuk kartu; kartu terangkat saat disorot | `stats-panel.css` 1–48 |
+
+**Cara mengambil screenshot**
+- Tunggu minimal **30 detik** agar angka, grafik, dan Top 5 sudah terisi bervariasi.
+- Sorot salah satu kartu dengan kursor agar efek terangkat ikut terlihat (opsional).
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.4 memperlihatkan panel statistik traffic yang terdiri atas empat kartu angka, grafik lalu lintas, dan diagram Top 5 jenis serangan. Kartu angka disusun dengan CSS Grid dua kolom, dan kartu "Kritis" diberi warna terbalik agar paling menonjol. Setiap kali serangan baru dibuat, fungsi `renderStats()` memperbarui total serangan, jumlah dan persentase serangan yang diblokir, serta jumlah serangan kritis melalui manipulasi DOM.
+>
+> Nilai paket per detik dihitung setiap detik dari traffic dasar, fluktuasi acak, dan lonjakan akibat serangan, kemudian disimpan dalam riwayat 60 data terakhir. Riwayat ini digambar sebagai grafik garis bergradien menggunakan Canvas API tanpa library grafik. Diagram Top 5 dibangun dengan elemen DOM biasa, dengan panjang setiap batang dihitung relatif terhadap jenis serangan terbanyak.
+
+*Gambar kode terkait: 3.5, 3.13, 3.25.*
+
+---
+
+#### Gambar 4.5 — Tabel log serangan real-time (T5)
+
+**Yang terlihat di layar**
+1. **Judul kolom** — Waktu, IP Sumber, Target, Jenis Serangan, Port, Severity, Status.
+2. **Baris data** — serangan terbaru di paling atas; baris genap sedikit lebih terang (zebra).
+3. **IP Sumber** — IP acak diikuti provinsi asal, misalnya `103.24.7.188 (SUMUT)`.
+4. **Target** — kota dan provinsi tujuan, misalnya `Surabaya, JATIM`.
+5. **Badge severity** — CRITICAL (latar putih), HIGH (garis putih), MEDIUM (garis putus-putus), LOW (garis titik-titik).
+6. **Status** — BLOCKED (abu-abu) atau ALLOWED (putih tebal).
+7. **Baris baru berkedip** sesaat ketika muncul.
+
+**Yang terjadi di balik layar**
+
+| Bagian | Cara kerja | Lokasi kode |
+|---|---|---|
+| Data serangan | `generateAttack()` membuat waktu, kota asal & target (selalu berbeda), IP acak, jenis, port, severity berbobot, dan status | `threat-logger.js` 106–125 |
+| Urutan terbaru di atas | `logs.unshift(attack)` menaruh data baru di indeks 0; disimpan maksimal 200 data | `threat-logger.js` 202–212 |
+| Membangun tabel | `renderTable()` menyaring sesuai filter, mengambil 50 data, membuat `<tr>`/`<td>` dengan `createElement` + `textContent`, lalu `replaceChildren()` | `threat-logger.js` 61–102, 184–200 |
+| Kedip baris baru | Baris pertama diberi class `row--new` → `@keyframes row-flash` | `threat-logger.js` 195–197, `threat-log.css` 52–54, 76–79 |
+| Judul kolom menempel | `position: sticky` pada `<th>` saat tabel digulir | `threat-log.css` 14–26 |
+| Zebra & hover | `tr:nth-child(even)` dan `tr:hover` | `threat-log.css` 34–44 |
+
+**Cara mengambil screenshot**
+- Tunggu sampai tabel terisi ±15 baris dengan severity yang beragam.
+- Gulir **di dalam** kotak tabel sedikit ke bawah agar terlihat judul kolom tetap menempel.
+- Sorot satu baris dengan kursor agar efek hover (teks putih) ikut terlihat.
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.5 menampilkan tabel log serangan real-time yang memuat 50 serangan terbaru, dengan serangan terbaru selalu berada di baris paling atas. Setiap baris berisi waktu, IP sumber beserta provinsi asal, kota target, jenis serangan, port, tingkat severity, dan status penanganan. Data dihasilkan oleh fungsi `generateAttack()` dan ditambahkan ke awal array log menggunakan `unshift()`.
+>
+> Baris tabel dibangun secara dinamis dengan `createElement` dan diisi menggunakan `textContent` agar aman dari penyisipan kode HTML. Pada sisi tampilan, judul kolom tetap menempel di atas saat tabel digulir berkat `position: sticky`, baris genap diberi warna zebra dengan `:nth-child(even)`, dan baris terbaru berkedip sesaat melalui animasi `@keyframes row-flash`. Label severity dibedakan dari kecerahan dan gaya garis tepi sesuai tema monokrom.
+
+*Gambar kode terkait: 3.6, 3.14, 3.20, 3.26.*
+
+---
+
+#### Gambar 4.6 — Fitur Pause / Play (T6)
+
+**Yang terlihat di layar**
+1. **Tombol** berubah dari `❚❚ PAUSE` menjadi `▶ PLAY`.
+2. **Status** berubah dari LIVE menjadi **PAUSED** dan berkedip.
+3. **Titik indikator** menjadi abu-abu dan berhenti berpendar.
+4. **Peta, radar, dan grafik** membeku pada posisi terakhir.
+5. **Tabel & angka statistik** tidak bertambah lagi.
+
+**Yang terjadi di balik layar** — alur satu kali klik:
+
+```
+klik tombol (controls.js 33–37)
+ ├─ running = !running
+ ├─ renderRunningState()              (controls.js 26–31)
+ │    ├─ <body> diberi class "is-paused"
+ │    ├─ teks tombol → "▶ Play", aria-pressed → "true"
+ │    └─ teks status → "PAUSED"
+ └─ handlers.onToggle(false)          (main.js 59–63)
+      ├─ main.js     : running = false   → spawnAttack() langsung berhenti (return)
+      ├─ radar-map   : setRunning(false) → update() dilewati, render() tetap jalan (gambar membeku)
+      └─ traffic-chart: setRunning(false) → tick() langsung berhenti (return)
+
+CSS bereaksi terhadap class "is-paused":
+ ├─ .is-paused .radar        → animation-play-state: paused   (radar-canvas.css 33–35)
+ ├─ .is-paused .status__dot  → abu-abu, animasi dimatikan      (header.css 101–104)
+ └─ .is-paused .status__text → berkedip @keyframes blink       (header.css 106–109)
+```
+
+Yang **tetap berjalan** saat Pause: jam digital, denyut logo, dan garis scan layar.
+Ketiganya sengaja tidak dihentikan karena bukan bagian dari simulasi data.
+
+**Cara mengambil screenshot**
+- Ambil dua gambar berdampingan: **sebelum** (LIVE, tombol Pause) dan **sesudah** (PAUSED, tombol Play).
+- Potong area Control Panel + header agar tombol dan status terlihat dalam satu gambar.
+  Karena teks PAUSED berkedip, ulangi screenshot bila teksnya sedang tidak tampak.
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.6 memperlihatkan perubahan tampilan setelah tombol Pause ditekan. Event `click` pada tombol ditangani modul `controls.js`, yang membalik status simulasi, menambahkan class `is-paused` pada elemen `<body>`, mengganti teks tombol menjadi "Play", mengubah status menjadi PAUSED, dan memperbarui atribut `aria-pressed` untuk aksesibilitas. Selanjutnya, fungsi *callback* `onToggle` di `main.js` meneruskan status tersebut ke modul peta dan grafik.
+>
+> Selama di-pause, pembuatan serangan baru dan perhitungan traffic dihentikan, sedangkan animasi peta tidak lagi diperbarui sehingga gambar membeku pada posisi terakhir. Pada sisi CSS, class `is-paused` menghentikan putaran radar melalui `animation-play-state: paused`, mengubah titik indikator menjadi abu-abu, dan membuat teks PAUSED berkedip. Menekan tombol Play mengembalikan seluruh proses dari kondisi terakhir.
+
+*Gambar kode terkait: 3.3, 3.9, 3.12, 3.27, 3.28.*
+
+---
+
+#### Gambar 4.7 — Fitur filter severity (T7)
+
+**Yang terlihat di layar**
+1. **Checkbox** Low dan Medium kosong; Critical dan High terisi putih.
+2. **Tabel log** hanya berisi badge HIGH dan CRITICAL.
+3. **Peta** hanya menampilkan garis tebal/terang (High & Critical).
+4. **Kartu statistik** tetap menghitung semua serangan.
+
+**Yang terjadi di balik layar**
+
+```
+centang berubah (controls.js 49–53, event "change")
+ └─ selectedSeverities()   → ['critical', 'high']   (controls.js 20–24)
+     └─ handlers.onFilterChange([...])               (main.js 72–75)
+          ├─ radar.setVisibleSeverities()  → render() hanya menggambar garis & gelombang
+          │                                  yang severity-nya ada di Set (radar-map.js 226–230)
+          └─ logger.setVisibleSeverities() → renderTable() langsung dipanggil ulang
+                                             dengan filter() (threat-logger.js 184–200, 223–226)
+```
+
+- Daftar severity disimpan dalam `Set`, sehingga pengecekan cukup dengan `.has(severity)`.
+- Filter **hanya memengaruhi tampilan**. Data tetap dibuat dan dihitung, sehingga Total, Diblokir, Kritis, dan Top 5 tidak berubah.
+- Karena log menyimpan hingga 200 data, tabel tetap terisi oleh serangan High/Critical yang lebih lama.
+- Jika semua checkbox dikosongkan, tabel menampilkan pesan "Belum ada data yang cocok dengan filter."
+- Tampilan checkbox adalah kotak kustom: `appearance: none` + `:checked` (`layout.css` 127–141).
+
+**Cara mengambil screenshot**
+- Hapus centang **Low** dan **Medium**, tunggu ±5 detik, lalu screenshot Control Panel, peta, dan tabel.
+- Agar perbedaannya jelas, sertakan juga screenshot sebelum filter (semua tercentang) sebagai pembanding.
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.7 menunjukkan fitur filter severity setelah centang Low dan Medium dihapus. Setiap perubahan checkbox memicu event `change` yang ditangani modul `controls.js`. Modul ini mengumpulkan nilai checkbox yang masih tercentang, lalu mengirimkannya ke modul peta dan modul log melalui *callback* `onFilterChange`. Kedua modul menyimpan daftar tersebut dalam struktur data `Set`.
+>
+> Tabel log langsung dibangun ulang menggunakan method `filter()` sehingga hanya menampilkan serangan High dan Critical, sementara peta hanya menggambar garis serangan dengan severity yang sama. Filter hanya memengaruhi tampilan; angka statistik tetap menghitung seluruh serangan agar ringkasan keamanan tetap akurat. Checkbox ditampilkan sebagai kotak kustom monokrom dengan `appearance: none` dan pseudo-class `:checked`.
+
+*Gambar kode terkait: 3.3, 3.11, 3.26, 3.27, 3.28.*
+
+---
+
+#### Gambar 4.8 — Fitur slider kecepatan (T8)
+
+**Yang terlihat di layar**
+1. **Slider** di posisi paling kanan dengan angka **10** di sebelahnya.
+2. **Peta** penuh dengan garis serangan (±10 serangan baru per detik).
+3. **Tabel log** bergerak sangat cepat.
+4. **Grafik traffic** naik tajam di bagian kanan.
+
+**Yang terjadi di balik layar**
+
+```
+slider digeser (controls.js 43–47, event "input")
+ ├─ <output> menampilkan angka baru
+ └─ handlers.onSpeedChange(10)            (main.js 67–71)
+      ├─ speed = 10
+      ├─ chart.setSpeed(10)               → traffic dasar ikut naik
+      └─ restartAttackTimer()             (main.js 38–41)
+           ├─ clearInterval(timer lama)
+           └─ setInterval(spawnAttack, 1300 − 10 × 120 = 100 ms)
+```
+
+| Kecepatan | Jeda serangan | Serangan/detik | Perkiraan paket/detik |
+|---|---|---|---|
+| 1 | 1180 ms | ±0,8 | ±710–1.100 |
+| 5 (awal) | 700 ms | ±1,4 | ±1.040–1.430 |
+| 10 | 100 ms | ±10 | ±2.060–2.540 |
+
+Perkiraan paket/detik dihitung dari rumus `800 + kecepatan × 60 + acak(−150…150) + serangan/detik × 90`.
+
+- Event `input` (bukan `change`) dipakai agar angka berubah **seketika** saat slider digeser, tanpa menunggu tombol mouse dilepas.
+- `clearInterval` wajib dipanggil. Tanpa itu, timer lama tetap hidup dan serangan menjadi berlipat ganda.
+
+**Cara mengambil screenshot**
+- Geser slider ke **10**, lalu tunggu **±15–20 detik** agar lonjakan di grafik terlihat jelas.
+- Sertakan Control Panel (slider + angka 10), peta, dan panel statistik dalam satu gambar,
+  atau buat dua gambar: kecepatan 1 dan kecepatan 10 sebagai pembanding.
+
+**Paragraf penjelasan untuk laporan**
+> Gambar 4.8 memperlihatkan hasil menggeser slider kecepatan ke nilai maksimum 10. Slider menggunakan input HTML5 `type="range"` dengan rentang 1–10, dan nilainya ditampilkan langsung melalui elemen `<output>`. Event `input` memastikan perubahan terjadi seketika selama slider digeser, lalu fungsi *callback* `onSpeedChange` di `main.js` memperbarui kecepatan simulasi.
+>
+> Fungsi `restartAttackTimer()` menghentikan timer lama dengan `clearInterval` dan membuat timer baru dengan `setInterval` berjeda `1300 − kecepatan × 120` milidetik. Pada kecepatan 10, jeda menjadi 100 ms sehingga sekitar sepuluh serangan baru muncul setiap detik. Akibatnya, peta dipenuhi garis serangan, tabel log bergerak cepat, dan grafik paket per detik meningkat tajam karena traffic dasar serta lonjakan akibat serangan ikut bertambah.
+
+*Gambar kode terkait: 3.3, 3.21, 3.25, 3.27, 3.28.*
