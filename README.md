@@ -22,7 +22,7 @@ JavaScript — tanpa server, database, framework, maupun library eksternal.
 
 - **HTML5** — elemen semantik (`header`, `nav`, `main`, `section`, `article`, `figure`, `footer`), `<canvas>`, `<time>`, `<output>`
 - **CSS3** — CSS Variables, Flexbox, CSS Grid, `@media` (Responsive), `@keyframes`, `conic-gradient`
-- **Vanilla JavaScript (ES6+)** — DOM manipulation, Canvas API 2D, `requestAnimationFrame`, `setInterval`, event handling
+- **Vanilla JavaScript (ES6 Modules)** — `import`/`export` native browser tanpa bundler, DOM manipulation, Canvas API 2D, `requestAnimationFrame`, `setInterval`, event handling
 
 Tanpa framework (React/Vue), tanpa library grafik (Chart.js/D3.js), tanpa Bootstrap/Tailwind, tanpa backend.
 
@@ -36,17 +36,35 @@ python3 -m http.server 8000
 
 Buka **http://localhost:8000** di browser. Hentikan server dengan `Ctrl + C`.
 
-> Alternatif: buka `index.html` langsung di browser, atau gunakan ekstensi **Live Server** di VS Code.
+> **Penting:** proyek ini memakai ES6 Modules, sehingga **harus dijalankan lewat server lokal**.
+> Membuka `index.html` langsung (klik dua kali / `file://`) akan diblokir browser karena aturan CORS.
+> Alternatif server: ekstensi **Live Server** di VS Code.
 
 ## 📁 Struktur Folder
 
 ```
 live-threat-and-traffic-visualizer/
-├── index.html                      # Struktur halaman (HTML5)
+├── index.html                      # Kerangka semantik HTML5
 ├── css/
-│   └── style.css                   # Tampilan, animasi & responsive (CSS3)
+│   ├── main.css                    # Entry point CSS (@import semua modul)
+│   ├── base.css                    # CSS variables, reset, tipografi, tema monokrom
+│   ├── layout.css                  # Grid dashboard, panel, control panel, footer
+│   └── components/
+│       ├── header.css              # Header & navbar
+│       ├── radar-canvas.css        # Container peta & efek radar
+│       ├── stats-panel.css         # Kartu statistik, grafik, diagram batang
+│       └── threat-log.css          # Tabel log serangan
 ├── js/
-│   └── app.js                      # Simulasi data, Canvas & interaksi (JavaScript)
+│   ├── main.js                     # Entry point: merangkai semua modul
+│   ├── config/
+│   │   └── cities.js               # 16 kota Indonesia & batas wilayah peta
+│   ├── utils/
+│   │   └── geo-converter.js        # latLngToCanvas(): lintang/bujur → piksel
+│   └── modules/
+│       ├── radar-map.js            # Peta canvas: grid, kota, animasi serangan
+│       ├── traffic-chart.js        # Grafik canvas paket/detik
+│       ├── threat-logger.js        # Generator serangan, statistik, tabel log
+│       └── controls.js             # Event tombol, filter, slider
 ├── docs/
 │   ├── PRD.md                      # Product Requirement Document
 │   ├── PENJELASAN-KODE.md          # Penjelasan alur kode untuk pemula

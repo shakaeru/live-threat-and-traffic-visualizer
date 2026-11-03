@@ -1,18 +1,19 @@
 # Panduan Pengumpulan & Tangkapan Layar — UTS
 
-Nama file dokumen: **`UTS_NAMA_KELAS`** → contoh: `UTS_BUDI_TI2A.docx` / `.pdf`
+Nama file dokumen: **`UTS_ShafwanKhairullah_2TRKB`** → `.docx` / `.pdf`
 (ikuti persis format dari dosen: huruf besar/kecil, garis bawah, tanpa spasi).
 
 ---
 
 ## 0. Persiapan sebelum screenshot
 
-1. Ganti `NAMA_ANDA (KELAS)` di footer `index.html` dengan nama & kelas Anda.
+1. Pastikan nama & kelas di footer `index.html` sudah benar.
 2. Buka proyek di VS Code dari WSL:
    ```bash
    cd ~/projects/live-threat-and-traffic-visualizer && code .
    ```
-3. Jalankan halaman. Cara paling mudah — server statis bawaan Python:
+3. Jalankan halaman **lewat server** (wajib, karena proyek memakai ES6 Modules — membuka
+   `index.html` dengan klik dua kali akan gagal):
    ```bash
    python3 -m http.server 8000
    ```
@@ -53,40 +54,47 @@ Untuk halaman penuh (T1) di Chrome: F12 → Ctrl+Shift+P → ketik **“Capture 
 
 | No | Bagian kode | Yang ditunjukkan |
 |---|---|---|
-| K1 | `<!DOCTYPE html>` sampai `</head>` | Struktur dokumen HTML5, `meta charset`, `meta viewport`, link CSS |
+| K1 | `<!DOCTYPE html>` sampai `</head>` | Struktur dokumen HTML5, `meta charset`, `meta viewport`, `<link>` ke `css/main.css`, `<script type="module">` |
 | K2 | Blok `<header class="site-header">` | `<header>`, `<nav>`, `<time>` |
 | K3 | Blok **Control Panel** (`<section ... id="controls">`) | `<button>`, `<fieldset>`, checkbox, `type="range"`, `<output>` |
 | K4 | Blok **Threat Map** (`<section ... id="map">`) | Elemen `<canvas>` |
 | K5 | Blok **Traffic Statistics** | `<article>`, `<figure>`, `<figcaption>`, `<canvas>` kedua |
-| K6 | Blok **Attack Log** + `<footer>` + `<script>` | `<table>`, `<thead>`, `<tbody>`, `<footer>` |
+| K6 | Blok **Attack Log** + `<footer>` | `<table>`, `<thead>`, `<tbody>`, `<footer>` |
 
-### B. `css/style.css` — CSS & CSS3
+### B. Folder `css/` — CSS & CSS3
 
-| No | Bagian kode | Yang ditunjukkan |
+| No | File & bagian kode | Yang ditunjukkan |
 |---|---|---|
-| K7 | Bagian **1. CSS VARIABLES** (`:root { ... }`) | CSS Variables |
-| K8 | Bagian **3. HEADER** (`.site-header`, `.brand`) | Flexbox, `position: sticky` |
-| K9 | Bagian **4. LAYOUT DASHBOARD** (`.dashboard`) | CSS Grid + `grid-template-areas` |
-| K10 | Bagian **5**: `.filter__item input` & `:checked` | Checkbox kustom `appearance: none` |
-| K11 | Bagian **6**: `.radar` + `.is-paused .radar` | `conic-gradient`, `animation-play-state` |
-| K12 | Bagian **9. ANIMASI** (semua `@keyframes`) | Animasi CSS3: pulse, radar, scanline, row-flash, blink |
-| K13 | Bagian **10. RESPONSIVE** (semua `@media`) | Responsive Web Design |
+| K7 | `css/main.css` (seluruh isi) | CSS modular dengan `@import` |
+| K8 | `css/base.css` → `:root { ... }` | CSS Variables (palet monokrom, font, jarak) |
+| K9 | `css/components/header.css` → `.site-header`, `.brand`, `.status` | Flexbox, `position: sticky` |
+| K10 | `css/layout.css` → `.dashboard` + `.panel--*` | CSS Grid + `grid-template-areas` |
+| K11 | `css/layout.css` → `.filter__item input` & `:checked` | Checkbox kustom `appearance: none` |
+| K12 | `css/components/radar-canvas.css` → `.radar`, `.is-paused .radar`, `@keyframes radar-sweep` | `conic-gradient`, animasi CSS3, `animation-play-state` |
+| K13 | `css/components/stats-panel.css` → `.stat-grid`, `.bars__item` | CSS Grid & Flexbox pada kartu statistik |
+| K14 | `css/components/threat-log.css` → `.log-table th`, `.badge--*`, `@keyframes row-flash` | Tabel sticky header, animasi baris baru |
+| K15 | Blok `@media` di `layout.css` + `stats-panel.css` (atau file lain) | Responsive Web Design (1024px & 600px) |
 
-### C. `js/app.js` — JavaScript
+### C. Folder `js/` — JavaScript (ES6 Modules)
 
-| No | Bagian kode | Yang ditunjukkan |
+| No | File & bagian kode | Yang ditunjukkan |
 |---|---|---|
-| K14 | Bagian **1** (`CONFIG`, `LOCATIONS`, `ATTACK_TYPES`) + **2** (`state`) | Struktur data: objek, array, `Set` |
-| K15 | Bagian **3** (`const dom = {...}`) | Seleksi DOM: `getElementById`, `querySelectorAll` |
-| K16 | Bagian **5**: `createAttack()`, `spawnAttack()`, `startAttackTimer()` | Simulasi data otomatis dengan `setInterval` |
-| K17 | Bagian **7**: `getArcPoint()` + `drawArc()` | Canvas API 2D: `beginPath`, `lineTo`, `stroke`, `arc`, kurva Bezier |
-| K18 | Bagian **7**: `updateAnimations()` + `animate()` | `requestAnimationFrame` |
-| K19 | Bagian **8**: `drawTrafficChart()` | Grafik garis manual + `createLinearGradient` |
-| K20 | Bagian **9**: `renderLog()` | Manipulasi DOM: `createElement`, `textContent`, `classList`, `replaceChildren` |
-| K21 | Bagian **10**: `togglePause()` … `bindEvents()` | Event handling: `click`, `change`, `input`, `resize` |
-| K22 | Bagian **11**: `init()` + `DOMContentLoaded` | Alur program dimulai |
+| K16 | Panel **Explorer** VS Code dengan folder `css/` dan `js/` terbuka | Arsitektur modular (banyak file per komponen) |
+| K17 | `js/main.js` → 4 baris `import` teratas | ES6 Modules: `import` / `export` |
+| K18 | `js/config/cities.js` (seluruh isi) | Array of objects, `Object.freeze`, data 16 kota |
+| K19 | `js/utils/geo-converter.js` (seluruh isi) | Fungsi `latLngToCanvas()` — proyeksi koordinat |
+| K20 | `js/modules/threat-logger.js` → `randomSeverity()` + `generateAttack()` | Simulasi data acak berbobot |
+| K21 | `js/main.js` → `spawnAttack()` + `restartAttackTimer()` | Simulasi otomatis dengan `setInterval` |
+| K22 | `js/modules/radar-map.js` → `pointOnArc()` + `drawArc()` | Canvas API 2D: `beginPath`, `lineTo`, `stroke`, `arc`, kurva Bézier |
+| K23 | `js/modules/radar-map.js` → `update()` + `render()` + `frame()` | `requestAnimationFrame` & delta time |
+| K24 | `js/modules/radar-map.js` → `LABEL_PLACEMENT` + `drawCities()` | Penempatan label kota agar tidak bertumpuk |
+| K25 | `js/modules/traffic-chart.js` → `draw()` | Grafik garis manual + `createLinearGradient` |
+| K26 | `js/modules/threat-logger.js` → `createRow()` + `renderTable()` | Manipulasi DOM: `createElement`, `textContent`, `classList`, `replaceChildren` |
+| K27 | `js/modules/controls.js` (seluruh isi) | Event handling: `click`, `input`, `change` + callback |
+| K28 | `js/main.js` → `initControls(...)` sampai akhir file | Integrasi modul, event `resize`, urutan start aplikasi |
 
-Tips: jika satu bagian terlalu panjang untuk satu layar, pecah jadi 2 gambar (mis. K12a, K12b).
+Tips: jika satu bagian terlalu panjang untuk satu layar, pecah jadi 2 gambar (mis. K22a, K22b).
+Penjelasan setiap bagian kode ada di `docs/PENJELASAN-KODE.md`.
 
 ---
 
@@ -95,21 +103,22 @@ Tips: jika satu bagian terlalu panjang untuk satu layar, pecah jadi 2 gambar (mi
 1. **Halaman Sampul** — judul proyek, nama, NIM, kelas, mata kuliah, dosen, logo kampus.
 2. **BAB 1 Pendahuluan** — ringkasan & tujuan (ambil dari `docs/PRD.md` bagian 1).
 3. **BAB 2 Rancangan** — daftar komponen, struktur folder, tabel pemetaan rubrik (PRD bagian 2, 3, 5).
-4. **BAB 3 Implementasi Kode** — screenshot K1–K22, masing-masing diberi:
+4. **BAB 3 Implementasi Kode** — screenshot K1–K28, masing-masing diberi:
    - judul gambar, contoh: *Gambar 3.7 CSS Variables pada `:root`*
    - 2–3 kalimat penjelasan dengan bahasa sendiri.
 5. **BAB 4 Hasil Tampilan** — screenshot T1–T11 + penjelasan singkat setiap fitur.
 6. **BAB 5 Penutup** — kesimpulan, kendala yang dihadapi, rencana pengembangan untuk UAS.
 7. **Lampiran** — link repository GitHub (jika diminta).
 
-Simpan dari Word sebagai PDF: **File → Save As → PDF**, beri nama `UTS_NAMA_KELAS.pdf`.
+Simpan dari Word sebagai PDF: **File → Save As → PDF**, beri nama `UTS_ShafwanKhairullah_2TRKB.pdf`.
 
 ---
 
 ## 4. Checklist Akhir
 
-- [ ] Nama & kelas di footer sudah diganti.
-- [ ] Semua screenshot kode menampilkan nomor baris.
+- [ ] Nama & kelas di footer sudah benar.
+- [ ] Halaman dibuka lewat `http://localhost:8000`, bukan klik dua kali `index.html`.
+- [ ] Semua screenshot kode menampilkan nomor baris dan nama file (tab di VS Code).
 - [ ] Setiap gambar punya nomor + keterangan.
-- [ ] Console browser tanpa error (T11).
-- [ ] Nama file sesuai format `UTS_NAMA_KELAS`.
+- [ ] Console browser tanpa error merah (T11).
+- [ ] Nama file sesuai format `UTS_ShafwanKhairullah_2TRKB`.

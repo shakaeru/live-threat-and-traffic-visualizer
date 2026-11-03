@@ -85,7 +85,7 @@ Gunakan tabel ini saat menulis sitasi di dalam teks laporan, contoh: *"…menggu
 | Optimasi canvas (lapisan statis/offscreen) | MDN (t.t.-f) |
 | Kurva Bézier (garis serangan melengkung) | MDN (t.t.-b); Kamermans (t.t.); Farin (2002) |
 | `requestAnimationFrame` & `setInterval` | MDN (t.t.-k); MDN (t.t.-l) |
-| Proyeksi equirectangular (`project()`) | Snyder (1987) |
+| Proyeksi equirectangular (`latLngToCanvas()`) | Snyder (1987) |
 | Teori visualisasi data | Tufte (2001); Munzner (2014); Shneiderman (1996) |
 | Desain dashboard monitoring | Few (2013) |
 | Inspirasi peta ancaman siber | Kaspersky (t.t.); Check Point Software Technologies (t.t.) |

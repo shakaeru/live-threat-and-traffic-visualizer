@@ -1,7 +1,8 @@
 # PRD — Live Threat & Traffic Visualizer
 
 > Product Requirement Document · Proyek UTS & UAS Pemrograman Web
-> Teknologi: HTML5, CSS3, JavaScript murni (tanpa framework, tanpa library, tanpa backend)
+> Teknologi: HTML5, CSS3 modular (`@import`), JavaScript murni dengan ES6 Modules
+> (tanpa framework, tanpa library, tanpa bundler, tanpa backend)
 
 ---
 
@@ -9,7 +10,9 @@
 
 **Live Threat & Traffic Visualizer** adalah dashboard satu halaman yang menampilkan simulasi
 serangan siber dan lalu lintas jaringan secara *real-time*. Semua data dibuat otomatis oleh
-JavaScript (mock data), sehingga tidak butuh server, database, atau koneksi internet.
+JavaScript (mock data), sehingga tidak butuh backend, database, atau koneksi internet.
+Cukup server statis lokal (`python3 -m http.server 8000`), karena browser hanya mengizinkan
+ES6 Modules dimuat lewat `http://`, bukan `file://`.
 
 **Tujuan:**
 
@@ -49,13 +52,20 @@ Aplikasi berupa **satu halaman** (`index.html`) dengan 6 komponen:
 **Alur data (sederhana):**
 
 ```
-setInterval (spawnAttack) ──► buat data serangan acak ──► simpan ke state
-                                                          │
-          ┌───────────────────────────────┬───────────────┴──────────────┐
-          ▼                               ▼                              ▼
-  state.arcs (animasi peta)      state.logs (tabel log)        state.totals (statistik)
-          │
-requestAnimationFrame (animate) menggambar ulang peta ±60x per detik
+main.js: setInterval(spawnAttack)
+            │
+            ▼
+threat-logger.js: generateAttack() ──► 1 objek serangan acak
+            │
+   ┌────────┼──────────────────────────┬───────────────────────────────┐
+   ▼                                   ▼                               ▼
+threat-logger.js: record()      radar-map.js: launch()        traffic-chart.js: recordAttack()
+(statistik + tabel log)         (garis animasi peta)          (lonjakan grafik traffic)
+                                       │
+                         requestAnimationFrame(frame)
+                         menggambar ulang peta ±60x per detik
+
+controls.js ──(callback onToggle / onFilterChange / onSpeedChange)──► main.js ──► semua modul
 ```
 
 ---
@@ -75,31 +85,34 @@ requestAnimationFrame (animate) menggambar ulang peta ±60x per detik
 
 ### 3.2 CSS & CSS3
 
-| Kriteria | Implementasi | Lokasi di `style.css` |
+| Kriteria | Implementasi | Lokasi |
 |---|---|---|
-| CSS Variables | Palet warna, font, jarak, radius di `:root` | Bagian 1 |
-| Flexbox | Header, control panel, legenda, diagram batang | Bagian 3, 5, 6, 7 |
-| CSS Grid | Tata letak dashboard (`grid-template-areas`), kartu statistik | Bagian 4, 7 |
-| Responsive (`@media`) | 3 ukuran: desktop (>1024px), tablet (≤1024px), HP (≤600px) | Bagian 10 |
-| Animasi `@keyframes` | `pulse` (titik LIVE), `radar-sweep` (radar berputar), `scanline` (garis scan layar), `row-flash` (baris log baru), `blink` | Bagian 9 |
+| CSS modular | `main.css` menggabungkan 6 file lewat `@import` | `css/main.css` |
+| CSS Variables | Palet warna, warna severity, font, jarak, radius di `:root` | `css/base.css` |
+| Flexbox | Header, control panel, legenda, diagram batang | `components/header.css`, `layout.css`, `components/radar-canvas.css`, `components/stats-panel.css` |
+| CSS Grid | Tata letak dashboard (`grid-template-areas`), kartu statistik, baris diagram batang | `layout.css`, `components/stats-panel.css` |
+| Responsive (`@media`) | 3 ukuran: desktop (>1024px), tablet (≤1024px), HP (≤600px); setiap file komponen memuat aturan responsifnya sendiri | `layout.css`, `components/*.css` |
+| Animasi `@keyframes` | `scanline` (garis scan layar), `pulse`, `pulse-ring`, `blink` (header), `radar-sweep` (radar), `row-flash` (baris log baru) | `base.css`, `components/header.css`, `components/radar-canvas.css`, `components/threat-log.css` |
 | Fitur CSS3 lain | `conic-gradient`, `repeating-linear-gradient`, `transition`, `transform`, `aspect-ratio`, `position: sticky`, `appearance: none` (checkbox kustom), pseudo-element `::before/::after` | Tersebar |
-| Aksesibilitas gerak | `@media (prefers-reduced-motion)` mematikan animasi | Bagian 10 |
+| Aksesibilitas gerak | `@media (prefers-reduced-motion)` mematikan animasi | `css/base.css` |
 
-### 3.3 JavaScript (Vanilla)
+### 3.3 JavaScript (Vanilla, ES6 Modules)
 
-| Kriteria | Implementasi | Fungsi di `app.js` |
+| Kriteria | Implementasi | Lokasi |
 |---|---|---|
-| Manipulasi DOM | Membuat baris tabel (`createElement`, `textContent`, `replaceChildren`), update angka statistik, ubah class/atribut | `renderLog()`, `updateStats()`, `renderTopTypes()`, `togglePause()` |
-| Canvas API 2D | Menggambar grid peta, titik kota, busur kurva Bezier, *pulse*, grafik garis + gradien | `drawMap()`, `drawArc()`, `drawPulse()`, `drawTrafficChart()` |
-| Simulasi data otomatis | `setInterval` untuk serangan, traffic, jam; `requestAnimationFrame` untuk animasi peta | `startAttackTimer()`, `trafficTick()`, `animate()` |
-| Event handling | `click` (Pause/Play, Clear), `change` (filter checkbox), `input` (slider), `resize` (ukuran layar), `DOMContentLoaded` | Bagian 9 `app.js` |
-| Logika & struktur data | Objek, array, `Set`, `filter`, `sort`, `map`, acak berbobot (*weighted random*) | `randomSeverity()`, `createAttack()` |
+| ES6 Modules | `export` / `import` antar 7 file, `<script type="module">` | `index.html`, semua file `js/` |
+| Manipulasi DOM | Membuat baris tabel (`createElement`, `textContent`, `replaceChildren`), update angka statistik, ubah class/atribut | `threat-logger.js` → `renderTable()`, `renderStats()`, `renderTopTypes()`; `controls.js` → `renderRunningState()` |
+| Canvas API 2D | Grid peta, titik & label kota, busur kurva Bézier, *pulse*, lapisan statis offscreen, grafik garis + gradien | `radar-map.js` → `drawBackground()`, `drawCities()`, `drawArc()`, `drawPulse()`; `traffic-chart.js` → `draw()` |
+| Konversi koordinat | Proyeksi equirectangular lintang/bujur → piksel | `utils/geo-converter.js` → `latLngToCanvas()` |
+| Simulasi data otomatis | `setInterval` untuk serangan, traffic, jam; `requestAnimationFrame` untuk animasi peta | `main.js` → `restartAttackTimer()`; `traffic-chart.js` → `tick()`; `radar-map.js` → `frame()` |
+| Event handling | `click` (Pause/Play, Clear), `change` (filter checkbox), `input` (slider), `resize` (ukuran layar) | `controls.js` → `initControls()`; `main.js` |
+| Logika & struktur data | Objek, array, `Set`, `Map`, `Object.freeze`, `filter`, `sort`, `map`, acak berbobot (*weighted random*), factory function & closure | `config/cities.js`, `threat-logger.js` → `randomSeverity()`, `generateAttack()` |
 
 ---
 
 ## 4. Kriteria Selesai (Checklist Uji)
 
-- [ ] Halaman terbuka langsung dari browser tanpa error di Console (F12).
+- [ ] Halaman terbuka lewat `http://localhost:8000` tanpa error di Console (F12).
 - [ ] Garis serangan muncul terus-menerus di peta dan diakhiri efek *pulse*.
 - [ ] Angka statistik & grafik traffic bertambah setiap detik.
 - [ ] Tabel log bertambah dari atas, maksimal 50 baris.
@@ -114,16 +127,33 @@ requestAnimationFrame (animate) menggambar ulang peta ±60x per detik
 
 ```
 ~/projects/live-threat-and-traffic-visualizer/
-├── index.html                  ← struktur halaman (HTML5)
+├── index.html                      ← kerangka semantik HTML5
 ├── css/
-│   └── style.css               ← seluruh tampilan (CSS3)
+│   ├── main.css                    ← entry point, @import semua modul CSS
+│   ├── base.css                    ← variabel, reset, tipografi, tema monokrom
+│   ├── layout.css                  ← grid dashboard, panel, control panel, footer
+│   └── components/
+│       ├── header.css
+│       ├── radar-canvas.css
+│       ├── stats-panel.css
+│       └── threat-log.css
 ├── js/
-│   └── app.js                  ← logika, simulasi, canvas (JavaScript)
+│   ├── main.js                     ← entry point, merangkai semua modul
+│   ├── config/cities.js            ← 16 kota Indonesia + batas peta
+│   ├── utils/geo-converter.js      ← latLngToCanvas()
+│   └── modules/
+│       ├── radar-map.js            ← peta & animasi serangan
+│       ├── traffic-chart.js        ← grafik paket/detik
+│       ├── threat-logger.js        ← data serangan, statistik, tabel log
+│       └── controls.js             ← event tombol, filter, slider
 ├── docs/
-│   ├── PRD.md                  ← dokumen ini
-│   └── PANDUAN-SCREENSHOT-UTS.md
-└── screenshots/                ← (buat sendiri) simpan hasil tangkapan layar
+│   ├── PRD.md                      ← dokumen ini
+│   ├── PENJELASAN-KODE.md
+│   ├── PANDUAN-SCREENSHOT-UTS.md
+│   └── DAFTAR-PUSTAKA.md
+├── README.md
+└── screenshots/                    ← (buat sendiri) simpan hasil tangkapan layar
 ```
 
-Pemisahan HTML (struktur), CSS (tampilan), dan JS (perilaku) adalah prinsip
-*separation of concerns* — poin plus saat presentasi.
+Pemisahan HTML (struktur), CSS (tampilan), dan JS (perilaku) — ditambah pemecahan CSS & JS
+per komponen — adalah prinsip *separation of concerns*, poin plus saat presentasi.

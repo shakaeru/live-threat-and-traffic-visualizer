@@ -1,0 +1,134 @@
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.stat-card {
+  padding: 12px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  transition: transform var(--transition), border-color var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--c-border-strong);
+}
+
+.stat-card__label {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.stat-card__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-white);
+}
+
+.stat-card__note {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+.stat-card--alert {
+  background: var(--c-white);
+  border-color: var(--c-white);
+}
+
+.stat-card--alert .stat-card__label,
+.stat-card--alert .stat-card__value {
+  color: var(--c-bg);
+}
+
+.chart {
+  margin-top: var(--gap);
+}
+
+.chart canvas {
+  display: block;
+  width: 100%;
+  height: 140px;
+  background: var(--c-canvas);
+  border: 1px solid var(--c-border);
+}
+
+.chart__caption {
+  margin-top: 6px;
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+.subtitle {
+  margin: var(--gap) 0 8px;
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.bars__item {
+  display: grid;
+  grid-template-columns: 9.5em 1fr 3em;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-xs);
+}
+
+.bars__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--c-text-dim);
+}
+
+.bars__track {
+  height: 8px;
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-border);
+}
+
+.bars__fill {
+  height: 100%;
+  background: var(--c-white);
+}
+
+.bars__count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bars__empty {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+@media (max-width: 1024px) {
+  .stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-card__value {
+    font-size: 1.3rem;
+  }
+}
